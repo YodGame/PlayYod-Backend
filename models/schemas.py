@@ -17,3 +17,18 @@ class Country(mongox.Model, db=db, collection="countries"):
     alpha_2: str = mongox.Field(..., min_length=2, max_length=2)
     alpha_3: str = mongox.Field(..., min_length=3, max_length=3)
     region: str
+
+
+class Game(mongox.Model, db=db, collection="games"):
+    app_id: str
+    name: str
+
+
+class TopRecord(mongox.Model, db=db, collection="top_records"):
+    app_id: str
+    players: int
+    peak_players: int
+    year: int
+    month: int
+    day: int
+    hour: int
