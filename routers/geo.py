@@ -14,7 +14,6 @@ async def players():
     # example data
     countries = await Country.query(
         Q.in_(Country.alpha_2, ['US', 'CN', 'RU', 'BR', 'DE', 'CA', 'FR', 'GB', 'PL', 'TR'])).all()
-    print(countries)
 
     test_num = 15000
     for country in countries:
@@ -38,7 +37,6 @@ async def game(app_id: str):
     # example data
     countries = await Country.query(
         Q.in_(Country.alpha_2, ['US', 'CN', 'RU', 'BR', 'DE', 'CA', 'FR', 'GB', 'PL', 'TR'])).all()
-    print(countries)
 
     test_num = 15000
     country_player = []
