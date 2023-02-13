@@ -32,3 +32,10 @@ class TopRecord(mongox.Model, db=db, collection="top_records"):
     month: int
     day: int
     hour: int
+
+
+class TopSeller(mongox.Model, db=db, collection="top_sellers"):
+    app_id: str
+    year: int
+    month: int
+    day: int
