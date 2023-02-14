@@ -62,6 +62,84 @@ async def top_records(date: Union[str, None] = None):
     return records
 
 
+@router.get('/records/today')
+async def top_records_today():
+    records = []
+    date_object = datetime.datetime.now()
+
+    pipeline = [
+        {"$match": {
+            "year": date_object.year,
+            "month": date_object.month,
+            "day": date_object.day
+        }},
+        {"$group": {
+            "_id": "$app_id",
+            "players": {"$max": "$players"},
+            "year": {"$first": "$year"},
+            "month": {"$first": "$month"},
+            "day": {"$first": "$day"},
+            "hour": {"$first": "$hour"}
+        }},
+        {"$sort": {"players": -1}},
+        {"$limit": 20},
+        {"$project": {
+            "_id": 0,
+            "app_id": "$_id",
+            "players": 1
+        }}
+    ]
+
+    data = await aggregate('top_records', pipeline)
+    start_date = date_object - datetime.timedelta(days=7)
+
+    game_list = [d['app_id'] for d in data]
+    game_name_list = await Game.query(Q.in_(Game.app_id, game_list)).all()
+
+    for i in range(0, len(data)):
+        pipeline = [
+            {
+                "$match": {
+                    "app_id": data[i]['app_id'],
+                    "year": {"$gte": start_date.year},
+                    "month": {"$gte": start_date.month},
+                    "day": {"$gte": start_date.day},
+                    "$and": [
+                        {"year": {"$lte": date_object.year}},
+                        {"month": {"$lte": date_object.month}},
+                        {"day": {"$lte": date_object.day}}
+                    ]
+                }
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "year": "$year",
+                        "month": "$month",
+                        "day": "$day"
+                    },
+                    "peak_players": {"$max": "$peak_players"}
+                }
+            },
+            {
+                "$sort": {"_id.year": -1, "_id.month": -1, "_id.day": -1}
+            }
+        ]
+        previous = await aggregate('top_records', pipeline)
+        previous_list = []
+        for p in previous:
+            dt = datetime.datetime(year=p['_id']['year'], month=p['_id']['month'], day=p['_id']['day'])
+            previous_list.append({'players': p['peak_players'], 'timestamp': int(dt.timestamp())})
+
+        game_name_index = next((index for (index, d) in enumerate(game_name_list) if d.app_id == data[i]['app_id']),
+                               None)
+
+        records.append({'name': game_name_list[game_name_index].name if game_name_index is not None else '',
+                        'players': data[i]['players'], 'previous': previous_list})
+
+    return records
+
+
 @router.get('/sellers')
 async def top_records(date: Union[str, None] = None):
     sellers = []
