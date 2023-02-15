@@ -17,22 +17,36 @@ async def top_records(date: Union[str, None] = None):
     pipeline = [
         {"$group": {
             "_id": "$app_id",
-            "players": {"$max": "$players"},
-            "year": {"$first": "$year"},
-            "month": {"$first": "$month"},
-            "day": {"$first": "$day"},
-            "hour": {"$first": "$hour"}
+            "max_players": {"$max": "$players"}
         }},
-        {"$sort": {"players": -1}},
+        {"$lookup": {
+            "from": "top_records",
+            "let": {"app_id": "$_id", "max_players": "$max_players"},
+            "pipeline": [
+                {"$match": {"$expr": {"$and": [
+                    {"$eq": ["$app_id", "$$app_id"]},
+                    {"$eq": ["$players", "$$max_players"]}
+                ]}}},
+                {"$project": {
+                    "year": 1,
+                    "month": 1,
+                    "day": 1,
+                    "hour": 1
+                }}
+            ],
+            "as": "player_doc"
+        }},
+        {"$unwind": "$player_doc"},
+        {"$sort": {"max_players": -1}},
         {"$limit": 50},
         {"$project": {
             "_id": 0,
             "app_id": "$_id",
-            "players": 1,
-            "year": 1,
-            "month": 1,
-            "day": 1,
-            "hour": 1
+            "players": "$max_players",
+            "year": "$player_doc.year",
+            "month": "$player_doc.month",
+            "day": "$player_doc.day",
+            "hour": "$player_doc.hour"
         }}
     ]
 
@@ -75,11 +89,7 @@ async def top_records_today():
         }},
         {"$group": {
             "_id": "$app_id",
-            "players": {"$max": "$players"},
-            "year": {"$first": "$year"},
-            "month": {"$first": "$month"},
-            "day": {"$first": "$day"},
-            "hour": {"$first": "$hour"}
+            "players": {"$max": "$players"}
         }},
         {"$sort": {"players": -1}},
         {"$limit": 20},
