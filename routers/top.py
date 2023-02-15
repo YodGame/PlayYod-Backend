@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 @router.get('/records')
-async def top_records(date: Union[str, None] = None):
+async def top_records(date: Union[str, None] = None, previous_days: Union[int, None] = None):
     records = []
 
     pipeline = [
@@ -53,10 +53,26 @@ async def top_records(date: Union[str, None] = None):
     try:
         if date is not None:
             date_object = datetime.datetime.strptime(date, '%Y-%m-%d')
-            pipeline.append({"$match": {
+            pipeline.insert(0, {"$match": {
                 "year": date_object.year,
                 "month": date_object.month
             }})
+        if previous_days is not None:
+            end_date = datetime.datetime.now()
+            start_date = end_date - datetime.timedelta(days=previous_days)
+            pipeline.insert(0, {
+                "$match": {
+                    "year": {"$gte": start_date.year},
+                    "month": {"$gte": start_date.month},
+                    "day": {"$gte": start_date.day},
+                    "$and": [
+                        {"year": {"$lte": end_date.year}},
+                        {"month": {"$lte": end_date.month}},
+                        {"day": {"$lte": end_date.day}}
+                    ]
+                }
+            })
+
     except:
         pass
 
@@ -151,7 +167,7 @@ async def top_records_today():
 
 
 @router.get('/sellers')
-async def top_records(date: Union[str, None] = None):
+async def top_sellers(date: Union[str, None] = None):
     sellers = []
     date_object = datetime.datetime.now()
 
