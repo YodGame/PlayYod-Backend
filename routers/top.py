@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 @router.get('/records')
-async def top_records(date: Union[str, None] = None, previous_days: Union[int, None] = None):
+async def top_records(date: Union[str, None] = None, previous_days: Union[int, None] = None, limit=50):
     records = []
 
     pipeline = [
@@ -38,7 +38,7 @@ async def top_records(date: Union[str, None] = None, previous_days: Union[int, N
         }},
         {"$unwind": "$player_doc"},
         {"$sort": {"max_players": -1}},
-        {"$limit": 50},
+        {"$limit": limit},
         {"$project": {
             "_id": 0,
             "app_id": "$_id",
@@ -93,7 +93,7 @@ async def top_records(date: Union[str, None] = None, previous_days: Union[int, N
 
 
 @router.get('/records/today')
-async def top_records_today():
+async def top_records_today(limit=20):
     records = []
     date_object = datetime.datetime.now()
 
@@ -108,7 +108,7 @@ async def top_records_today():
             "players": {"$max": "$players"}
         }},
         {"$sort": {"players": -1}},
-        {"$limit": 20},
+        {"$limit": limit},
         {"$project": {
             "_id": 0,
             "app_id": "$_id",
@@ -167,7 +167,7 @@ async def top_records_today():
 
 
 @router.get('/sellers')
-async def top_sellers(date: Union[str, None] = None):
+async def top_sellers(date: Union[str, None] = None, limit=50):
     sellers = []
     date_object = datetime.datetime.now()
 
@@ -177,7 +177,8 @@ async def top_sellers(date: Union[str, None] = None):
     except:
         pass
 
-    data = await TopSeller.query({'year': date_object.year, 'month': date_object.month, 'day': date_object.day}).limit(50).all()
+    data = await TopSeller.query({'year': date_object.year, 'month': date_object.month, 'day': date_object.day}).limit(
+        limit).all()
     game_list = [d.app_id for d in data]
 
     game_name_list = await Game.query(Q.in_(Game.app_id, game_list)).all()
@@ -185,6 +186,7 @@ async def top_sellers(date: Union[str, None] = None):
     for game in data:
         game_name_index = next((index for (index, d) in enumerate(game_name_list) if d.app_id == game.app_id),
                                None)
-        sellers.append({'app_id': game.app_id, 'name': game_name_list[game_name_index].name if game_name_index is not None else ''})
+        sellers.append({'app_id': game.app_id,
+                        'name': game_name_list[game_name_index].name if game_name_index is not None else ''})
 
     return sellers
