@@ -17,7 +17,7 @@ async def players():
 
     test_num = 15000
     for country in countries:
-        players.append({'name': country.name, 'users': test_num})
+        players.append({'name': country.alpha_2, 'users': test_num})
         test_num -= 1000
 
     return players
@@ -41,7 +41,7 @@ async def game(app_id: str):
     test_num = 15000
     country_player = []
     for country in countries:
-        country_player.append({'name': country.name, 'users': test_num})
+        country_player.append({'name': country.alpha_2, 'users': test_num})
         test_num -= 1000
 
     players["players"] = country_player
