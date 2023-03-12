@@ -1,5 +1,6 @@
 import json
 import urllib.request
+import pandas as pd
 
 from fastapi import APIRouter
 from mongox import Q
@@ -11,14 +12,34 @@ router = APIRouter()
 @router.get('/players')
 async def players():
     players = []
-    # example data
-    countries = await Country.query(
-        Q.in_(Country.alpha_2, ['US', 'CN', 'RU', 'BR', 'DE', 'CA', 'FR', 'GB', 'PL', 'TR'])).all()
 
-    test_num = 15000
-    for country in countries:
-        players.append({'name': country.alpha_2, 'users': test_num})
-        test_num -= 1000
+    json_str = urllib.request.urlopen(
+        f"https://cdn.akamai.steamstatic.com/steam/publicstats/download_traffic_per_country.json")
+    json_str = json_str.read().decode("utf-8").replace('onTrafficData(', '').replace(');', '')
+
+    df = pd.read_json(json_str, orient='index')
+
+    # Calculate total number of bytes for all countries
+    total_bytes = df["totalbytes"].sum()
+
+    # Calculate percentage of total bytes for each country
+    df["percentage_bytes"] = df["totalbytes"] / total_bytes * 100
+
+    # Format percentage values
+    df["percentage_bytes"] = df["percentage_bytes"].map("{:.3f}".format)
+
+    online_data = urllib.request.urlopen("https://store.steampowered.com/stats/userdata.json?days_back=3")
+    online_data = json.loads(online_data.read())[0]['data'][-1][1]
+
+    for i, country in df.iterrows():
+        if country["percentage_bytes"] == "0.000":
+            continue
+
+        try:
+            country_info = await Country.query({'alpha_3': i}).get()
+            players.append({'name': country_info.name, 'users': int((online_data * float(country["percentage_bytes"])) / 100)})
+        except:
+            pass
 
     return players
 
