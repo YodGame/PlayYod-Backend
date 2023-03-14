@@ -1,4 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, Form
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr, constr
 from models.schemas import User
 from mongox import Q
@@ -24,7 +25,7 @@ class LoginForm(BaseModel):
 
 
 @router.post('/register')
-async def register(form_data: RegisterForm):
+async def register(form_data: RegisterForm = Form()):
     username = form_data.username.lower()
     email = form_data.email.lower()
 
@@ -46,7 +47,7 @@ async def register(form_data: RegisterForm):
 
 
 @router.post('/login')
-async def login(form_data: LoginForm):
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     username = form_data.username.lower()
 
     user = await User.query(Q.or_(User.username == username, User.email == username)).all()
@@ -65,10 +66,16 @@ async def login(form_data: LoginForm):
         }, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
 
         return {
-            "token": token
+            "access_token": token,
+            "token_type": "bearer"
         }
     else:
         return {
             "status": "error",
             "message": "Password is incorrect."
         }
+
+
+@router.get('/me')
+async def me(user: utils.oauth.UserSchema = Depends(utils.oauth.get_current_user)):
+    return user
