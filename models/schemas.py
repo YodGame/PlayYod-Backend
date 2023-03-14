@@ -39,3 +39,10 @@ class TopSeller(mongox.Model, db=db, collection="top_sellers"):
     year: int
     month: int
     day: int
+
+
+class User(mongox.Model, db=db, collection="users"):
+    username: str
+    email: str
+    password: str
+    full_name: str
