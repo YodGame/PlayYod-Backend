@@ -1,7 +1,7 @@
 import jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, Form
 from fastapi.security import OAuth2PasswordBearer
 from starlette.responses import JSONResponse
 
@@ -24,6 +24,16 @@ def get_hashed_password(password: str) -> str:
 
 def verify_password(password: str, hashed_pass: str) -> bool:
     return password_context.verify(password, hashed_pass)
+
+
+def form_body(cls):
+    cls.__signature__ = cls.__signature__.replace(
+        parameters=[
+            arg.replace(default=Form(...))
+            for arg in cls.__signature__.parameters.values()
+        ]
+    )
+    return cls
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)):

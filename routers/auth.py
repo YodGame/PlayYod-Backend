@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Depends, Form
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, EmailStr, constr
 from models.schemas import User
 from mongox import Q
+from typing import Optional
 from settings import JWT_SECRET_KEY, JWT_ALGORITHM, JWT_TOKEN_EXPIRE_MINUTES
 
 import jwt
@@ -12,20 +12,22 @@ import datetime
 router = APIRouter()
 
 
+@utils.oauth.form_body
 class RegisterForm(BaseModel):
-    username: constr(min_length=3, max_length=20)
+    username: constr(min_length=3, max_length=20, regex=r'^[a-zA-Z_]+$')
     email: EmailStr
     password: str
-    full_name: constr(max_length=100)
+    full_name: Optional[constr(max_length=100)]
 
 
+@utils.oauth.form_body
 class LoginForm(BaseModel):
     username: str
     password: str
 
 
 @router.post('/register')
-async def register(form_data: RegisterForm = Form()):
+async def register(form_data: RegisterForm = Depends()):
     username = form_data.username.lower()
     email = form_data.email.lower()
 
@@ -47,7 +49,7 @@ async def register(form_data: RegisterForm = Form()):
 
 
 @router.post('/login')
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login(form_data: LoginForm = Depends()):
     username = form_data.username.lower()
 
     user = await User.query(Q.or_(User.username == username, User.email == username)).all()
