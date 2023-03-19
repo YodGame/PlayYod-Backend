@@ -64,7 +64,7 @@ async def login(form_data: LoginForm = Depends()):
     if utils.oauth.verify_password(form_data.password, user.password):
         token = jwt.encode({
             "username": user.username,
-            "exp": datetime.datetime.now() + datetime.timedelta(minutes=JWT_TOKEN_EXPIRE_MINUTES)
+            "exp": (datetime.datetime.today() + datetime.timedelta(minutes=JWT_TOKEN_EXPIRE_MINUTES)).timestamp()
         }, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
 
         return {
