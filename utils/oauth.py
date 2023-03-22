@@ -39,7 +39,7 @@ def form_body(cls):
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         user_obj = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
-    except jwt.ExpiredSignatureError:
+    except:
         return JSONResponse(content={"message": "Invalid token"}, status_code=401)
 
     user_db = await User.query(User.username == user_obj["username"]).all()
