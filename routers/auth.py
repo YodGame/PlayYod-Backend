@@ -14,7 +14,7 @@ router = APIRouter()
 
 @utils.oauth.form_body
 class RegisterForm(BaseModel):
-    username: constr(min_length=3, max_length=20, regex=r'^[a-zA-Z_]+$')
+    username: constr(min_length=3, max_length=20, regex=r'^[a-zA-Z0-9_]+$')
     email: EmailStr
     password: str
     full_name: Optional[constr(max_length=100)]
