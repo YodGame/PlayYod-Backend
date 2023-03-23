@@ -46,3 +46,11 @@ class User(mongox.Model, db=db, collection="users"):
     email: str
     password: str
     full_name: str
+
+
+class Rating(mongox.Model, db=db, collection="ratings"):
+    app_id: str
+    review: str
+    positive: int
+    negative: int
+    all: int

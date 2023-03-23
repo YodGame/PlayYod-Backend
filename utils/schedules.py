@@ -3,7 +3,7 @@ import urllib.request
 import datetime
 
 from bs4 import BeautifulSoup
-from models.schemas import TopRecord, TopSeller
+from models.schemas import TopRecord, TopSeller, Rating
 
 
 async def top_records():
@@ -37,3 +37,21 @@ async def top_sellers():
             await top_sellers_model.insert()
 
         print(f"Top Sellers: Fetch Steam Store at {now}")
+
+
+async def top_ratings():
+    now = datetime.datetime.now()
+
+    ratings = await Rating.query().all()
+    for game in ratings:
+        data = urllib.request.urlopen(
+            f"https://store.steampowered.com/appreviews/{game.app_id}?json=1&purchase_type=all&num_per_page=0&language=all")
+        data = json.loads(data.read())
+
+        game.review = data["query_summary"]["review_score_desc"]
+        game.positive = data["query_summary"]["total_positive"]
+        game.negative = data["query_summary"]["total_negative"]
+        game.all = data["query_summary"]["total_reviews"]
+        await game.save()
+
+    print(f"Top Ratings: Fetch Steam Reviews at {now}")

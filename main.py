@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from routers import geo, games, top, home, auth
 from settings import CLIENT_ORIGINS
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from utils.schedules import top_records, top_sellers
+from utils.schedules import top_records, top_sellers, top_ratings
 
 app = FastAPI()
 
@@ -30,4 +30,5 @@ def init_data():
     # years, months, days, hours, minutes, seconds
     scheduler.add_job(top_records, 'interval', hours=1, next_run_time=datetime.datetime.now())
     scheduler.add_job(top_sellers, 'interval', days=1, next_run_time=datetime.datetime.now())
+    #scheduler.add_job(top_ratings, 'interval', days=3, next_run_time=datetime.datetime.now())
     scheduler.start()
