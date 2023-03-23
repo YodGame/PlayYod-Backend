@@ -7,7 +7,7 @@ router = APIRouter()
 
 
 @router.get('/top')
-async def top(limit: int = Query(default=50, ge=0, le=100, description="")):
+async def top(limit: int = Query(default=50, ge=0, le=100)):
     ratings = []
 
     data = await Rating.query().limit(limit).all()

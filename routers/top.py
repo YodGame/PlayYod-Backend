@@ -1,7 +1,7 @@
 import datetime
 from typing import Union
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from mongox import Q
 
 from models.schemas import Game, TopSeller
@@ -11,7 +11,7 @@ router = APIRouter()
 
 
 @router.get('/records')
-async def top_records(date: Union[str, None] = None, previous_days: Union[int, None] = None, limit=50):
+async def top_records(date: Union[str, None] = None, previous_days: Union[int, None] = None, limit: int = Query(default=50, ge=0, le=100)):
     records = []
 
     pipeline = [
@@ -93,7 +93,7 @@ async def top_records(date: Union[str, None] = None, previous_days: Union[int, N
 
 
 @router.get('/records/today')
-async def top_records_today(limit=20):
+async def top_records_today(limit: int = Query(default=20, ge=0, le=100)):
     records = []
     date_object = datetime.datetime.now()
 
@@ -167,7 +167,7 @@ async def top_records_today(limit=20):
 
 
 @router.get('/sellers')
-async def top_sellers(date: Union[str, None] = None, limit=50):
+async def top_sellers(date: Union[str, None] = None, limit: int = Query(default=50, ge=0, le=100)):
     sellers = []
     date_object = datetime.datetime.now()
 
