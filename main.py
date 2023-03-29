@@ -2,7 +2,7 @@ import datetime
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import geo, games, top, home, auth, ratings
+from routers import geo, games, top, home, auth, ratings, mentions
 from settings import CLIENT_ORIGINS
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from utils.schedules import top_records, top_sellers, top_ratings
@@ -23,6 +23,7 @@ app.include_router(top.router, tags=['Top'], prefix='/top')
 app.include_router(home.router, tags=['Home'], prefix='/home')
 app.include_router(auth.router, tags=['Auth'], prefix='/auth')
 app.include_router(ratings.router, tags=['Ratings'], prefix='/ratings')
+app.include_router(mentions.router, tags=['Mentions'], prefix='/mentions')
 
 
 @app.on_event('startup')
