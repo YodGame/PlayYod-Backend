@@ -24,6 +24,11 @@ async def search(keyword: Union[str, None] = None):
             search.append({
                 "title": item["data"]["title"],
                 "author": item["data"]["author"],
+                "subreddit": item["data"]["subreddit_name_prefixed"],
+                "ups": item["data"]["ups"],
+                "num_comments": item["data"]["num_comments"],
+                "flair_name": item["data"]["link_flair_text"],
+                "flair_color": item["data"]["link_flair_background_color"],
                 "thumbnail": thumbnail,
                 "url": f"https://www.reddit.com{url}"
             })
