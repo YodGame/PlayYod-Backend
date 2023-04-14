@@ -5,7 +5,8 @@ load_dotenv()
 
 CLIENT_ORIGINS = [
     "http://localhost",
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "https://playyod.maxnus.com"
 ]
 
 MONGODB_URI = os.getenv("MONGODB_URI")
